@@ -5,12 +5,13 @@ A new Flutter project.
 ## Getting Started
 
 ## Live server is must to load the local json file.
-In analysis_option.yaml file at line 26 'prefer_single_quotes: true'
+In analysis_option.yaml 
+    1.'prefer_single_quotes: true'
+    2.'require_trailing_commas: true'
 
 ## Dependency
  1. bloc
  2. flutter_bloc
+ 3. flutter_hooks
 
 
-## Dev-Dependency
- 1. bloc_test () (cmd : flutter pub add --dev bloc_test)
