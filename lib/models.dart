@@ -14,7 +14,6 @@ class LoginHandle {
   bool operator ==(covariant LoginHandle other) => token == other.token;
 
   @override
-  // TODO: implement hashCode
   int get hashCode => token.hashCode;
 
   @override
@@ -32,7 +31,7 @@ class Note {
   });
 
   @override
-  String toString() => 'Note (title = $title';
+  String toString() => 'Note (title = $title)';
 }
 
 final mockNotes = Iterable.generate(3, (i) => Note(title: 'Note ${i + 1}'));

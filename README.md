@@ -14,4 +14,5 @@ In analysis_option.yaml
  2. flutter_bloc
  3. flutter_hooks
 
-
+username : foo@bar.com
+password: foobar
