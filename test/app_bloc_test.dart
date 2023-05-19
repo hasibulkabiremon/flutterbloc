@@ -55,7 +55,7 @@ class DummyLoginApi implements LoginApiProtocall {
   const DummyLoginApi.empty()
       : acceptedPassword = '',
         acceptedEmail = '',
-        handleToReturn =  const LoginHandle.foobar();
+        handleToReturn = const LoginHandle.foobar();
 
   @override
   Future<LoginHandle?> login({
@@ -70,12 +70,15 @@ class DummyLoginApi implements LoginApiProtocall {
   }
 }
 
+const accettedLoginHandle = LoginHandle(token: 'ABC');
+
 void main() {
   blocTest<AppBloc, AppState>(
     'Initial state of the bloc should be AppState.empty()',
     build: () => AppBloc(
       loginApi: const DummyLoginApi.empty(),
       notesApi: const DummyNotesApi.empty(),
+      acceptedLoginHandle: accettedLoginHandle,
     ),
     verify: (appState) => expect(appState.state, const AppState.empty()),
   );
@@ -86,9 +89,10 @@ void main() {
       loginApi: const DummyLoginApi(
         acceptedEmail: 'bar@baz.com',
         acceptedPassword: 'foo',
-        handleToReturn: LoginHandle(token: 'ABC')
+        handleToReturn: accettedLoginHandle,
       ),
       notesApi: const DummyNotesApi.empty(),
+      acceptedLoginHandle: accettedLoginHandle,
     ),
     act: (appBloc) => appBloc.add(
       const LoginAction(
@@ -106,9 +110,95 @@ void main() {
       const AppState(
         isLoading: false,
         loginError: null,
-        loginHandle: LoginHandle(token: 'ABC'),
+        loginHandle: accettedLoginHandle,
         fetchedNotes: null,
       )
+    ],
+  );
+
+  blocTest<AppBloc, AppState>(
+    'We should not able to log in with invalid credentials',
+    build: () => AppBloc(
+      loginApi: const DummyLoginApi(
+        acceptedEmail: 'foo@bar.com',
+        acceptedPassword: 'baz',
+        handleToReturn: accettedLoginHandle,
+      ),
+      notesApi: const DummyNotesApi.empty(),
+      acceptedLoginHandle: accettedLoginHandle,
+    ),
+    act: (appBloc) => appBloc.add(
+      const LoginAction(
+        email: 'bar@baz.com',
+        password: 'foo',
+      ),
+    ),
+    expect: () => [
+      const AppState(
+        isLoading: true,
+        loginError: null,
+        loginHandle: null,
+        fetchedNotes: null,
+      ),
+      const AppState(
+        isLoading: false,
+        loginError: LoginErrors.invalidHandle,
+        loginHandle: null,
+        fetchedNotes: null,
+      )
+    ],
+  );
+
+  blocTest<AppBloc, AppState>(
+    'Load Some Notes with a valid login handle ',
+    build: () => AppBloc(
+      loginApi: const DummyLoginApi(
+        acceptedEmail: 'bar@baz.com',
+        acceptedPassword: 'foo',
+        handleToReturn: accettedLoginHandle,
+      ),
+      notesApi: const DummyNotesApi(
+        acceptedLoginHandle: accettedLoginHandle,
+        notesToReturnForAcceptedLoginHandle: mockNotes,
+      ),
+      acceptedLoginHandle: accettedLoginHandle,
+    ),
+    act: (appBloc) {
+      appBloc.add(
+        const LoginAction(
+          email: 'bar@baz.com',
+          password: 'foo',
+        ),
+      );
+      appBloc.add(
+        const LoadNotesAction(),
+      );
+    },
+    expect: () => [
+      const AppState(
+        isLoading: true,
+        loginError: null,
+        loginHandle: null,
+        fetchedNotes: null,
+      ),
+      const AppState(
+        isLoading: false,
+        loginError: null,
+        loginHandle: accettedLoginHandle,
+        fetchedNotes: null,
+      ),
+      const AppState(
+        isLoading: true,
+        loginError: null,
+        loginHandle: accettedLoginHandle,
+        fetchedNotes: null,
+      ),
+      const AppState(
+        isLoading: false,
+        loginError: null,
+        loginHandle: accettedLoginHandle,
+        fetchedNotes: mockNotes,
+      ),
     ],
   );
 }
