@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart' show immutable;
+import 'package:flutter_block_1/bloc/actions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_block_1/apis/login_api.dart';
@@ -43,15 +44,18 @@ class DummyNotesApi implements NotesApiProtocall {
 class DummyLoginApi implements LoginApiProtocall {
   final String acceptedEmail;
   final String acceptedPassword;
+  final LoginHandle handleToReturn;
 
   const DummyLoginApi({
     required this.acceptedEmail,
     required this.acceptedPassword,
+    required this.handleToReturn,
   });
 
   const DummyLoginApi.empty()
       : acceptedPassword = '',
-        acceptedEmail = '';
+        acceptedEmail = '',
+        handleToReturn =  const LoginHandle.foobar();
 
   @override
   Future<LoginHandle?> login({
@@ -59,7 +63,7 @@ class DummyLoginApi implements LoginApiProtocall {
     required String password,
   }) async {
     if (email == acceptedEmail && password == acceptedPassword) {
-      return const LoginHandle.foobar();
+      return handleToReturn;
     } else {
       return null;
     }
@@ -74,5 +78,37 @@ void main() {
       notesApi: const DummyNotesApi.empty(),
     ),
     verify: (appState) => expect(appState.state, const AppState.empty()),
+  );
+
+  blocTest<AppBloc, AppState>(
+    'Can we log in with correct credentials? ',
+    build: () => AppBloc(
+      loginApi: const DummyLoginApi(
+        acceptedEmail: 'bar@baz.com',
+        acceptedPassword: 'foo',
+        handleToReturn: LoginHandle(token: 'ABC')
+      ),
+      notesApi: const DummyNotesApi.empty(),
+    ),
+    act: (appBloc) => appBloc.add(
+      const LoginAction(
+        email: 'bar@baz.com',
+        password: 'foo',
+      ),
+    ),
+    expect: () => [
+      const AppState(
+        isLoading: true,
+        loginError: null,
+        loginHandle: null,
+        fetchedNotes: null,
+      ),
+      const AppState(
+        isLoading: false,
+        loginError: null,
+        loginHandle: LoginHandle(token: 'ABC'),
+        fetchedNotes: null,
+      )
+    ],
   );
 }
