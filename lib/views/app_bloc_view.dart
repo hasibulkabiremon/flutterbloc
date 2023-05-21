@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_block_1/bloc/app_bloc.dart';
 import 'package:flutter_block_1/bloc/app_state.dart';
-import 'package:flutter_block_1/bloc/bloc_event.dart';
-import 'package:flutter_block_1/extentions/stream/start_with.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_block_1/bloc/bloc_events.dart';
+import 'package:flutter_block_1/extensions/stream/start_with.dart';
 
 class AppBlocView<T extends AppBloc> extends StatelessWidget {
   const AppBlocView({Key? key}) : super(key: key);
@@ -26,15 +26,21 @@ class AppBlocView<T extends AppBloc> extends StatelessWidget {
       child: BlocBuilder<T, AppState>(
         builder: (context, appState) {
           if (appState.error != null) {
-            return const Text('An error ocurred. Try again in a moment!');
+            // we have an error
+            return const Text(
+              'An error occurred. Try again in a moment!',
+            );
           } else if (appState.data != null) {
+            // we have data
             return Image.memory(
               appState.data!,
               fit: BoxFit.fitHeight,
             );
-          }else{
-            return const Center(child:
-              CircularProgressIndicator(),);
+          } else {
+            // loading
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
           }
         },
       ),

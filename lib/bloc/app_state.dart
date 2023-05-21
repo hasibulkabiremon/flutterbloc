@@ -1,11 +1,10 @@
-import 'package:flutter/foundation.dart' show immutable;
 import 'dart:typed_data' show Uint8List;
+import 'package:flutter/foundation.dart' show immutable;
 
 @immutable
 class AppState {
   final bool isLoading;
   final Uint8List? data;
-
   final Object? error;
 
   const AppState({

@@ -1,7 +1,7 @@
-import 'package:bloc/bloc.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_block_1/bloc/app_state.dart';
-import 'bloc_event.dart';
+import 'package:flutter_block_1/bloc/bloc_events.dart';
 import 'dart:math' as math;
 
 typedef AppBlocRandomUrlPicker = String Function(Iterable<String> allUrls);
@@ -23,6 +23,7 @@ class AppBloc extends Bloc<AppEvent, AppState> {
           const AppState.empty(),
         ) {
     on<LoadNextUrlEvent>((event, emit) async {
+      // start loading
       emit(
         const AppState(
           isLoading: true,
@@ -32,11 +33,18 @@ class AppBloc extends Bloc<AppEvent, AppState> {
       );
       final url = (urlPicker ?? _pickRandomUrl)(urls);
       try {
-        if( waitBeforeLoading != null){
+        if (waitBeforeLoading != null) {
           await Future.delayed(waitBeforeLoading);
         }
         final bundle = NetworkAssetBundle(Uri.parse(url));
         final data = (await bundle.load(url)).buffer.asUint8List();
+        emit(
+          AppState(
+            isLoading: false,
+            data: data,
+            error: null,
+          ),
+        );
       } catch (e) {
         emit(
           AppState(
@@ -47,6 +55,5 @@ class AppBloc extends Bloc<AppEvent, AppState> {
         );
       }
     });
-    on((event, emit) {});
   }
 }
